@@ -1,11 +1,15 @@
 package ioio.examples.hello;
 
 import ioio.lib.api.DigitalOutput;
+import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.android.IOIOActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 /**
@@ -15,6 +19,8 @@ import android.widget.ToggleButton;
  */
 public class MainActivity extends IOIOActivity {
 	private ToggleButton button_;
+	private TextView mText;
+	private ScrollView scroller;
 
 	/**
 	 * Called when the activity is first created. Here we normally initialize
@@ -25,6 +31,7 @@ public class MainActivity extends IOIOActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		button_ = (ToggleButton) findViewById(R.id.button);
+		//mText = (TextView) findViewById(R.id.text);
 	}
 
 	/**
@@ -35,10 +42,14 @@ public class MainActivity extends IOIOActivity {
 	 * be called repetitively until the IOIO gets disconnected.
 	 */
 	class Looper extends BaseIOIOLooper {
-		/** The on-board LED. */
-		private DigitalOutput led_;
+		private DigitalOutput led_;// on-board LED
 		private DigitalOutput rightMotorClock;
+		private DigitalOutput leftMotorClock;
 		private DigitalOutput motorEn;
+		private PwmOutput rightMotorPWM;
+		private PwmOutput leftMotorPWM;
+		private DigitalOutput rightMotorDirection;
+        private DigitalOutput leftMotorDirection;
 
 		/**
 		 * Called every time a connection with IOIO has been established.
@@ -52,29 +63,39 @@ public class MainActivity extends IOIOActivity {
 		@Override
 		protected void setup() throws ConnectionLostException {
 			led_ = ioio_.openDigitalOutput(0, true);
-			rightMotorClock = ioio_.openDigitalOutput(28);
+			// rightMotorClock = ioio_.openDigitalOutput(28);
+			// leftMotorClock = ioio_.openDigitalOutput(27);
 			motorEn = ioio_.openDigitalOutput(3);
 			motorEn.write(true);
+			rightMotorClock.write(true);
+			leftMotorClock.write(true);
+			rightMotorPWM = ioio_.openPwmOutput(28, 200);//pin #, frequency right motor
+            leftMotorPWM = ioio_.openPwmOutput(27, 200);//pin #, frequency right motor
+            rightMotorPWM.setPulseWidth(10);
+            leftMotorPWM.setPulseWidth(10);
+            rightMotorDirection = ioio_.openDigitalOutput(20);
+            rightMotorDirection.write(false);
+            leftMotorDirection = ioio_.openDigitalOutput(21);
+            leftMotorDirection.write(true);
 		}
 
 		/**
 		 * Called repetitively while the IOIO is connected.
-		 * 
-		 * @throws ConnectionLostException
-		 *             When IOIO connection is lost.
-		 * 
+		 * @throws ConnectionLostException When IOIO connection is lost.
 		 * @see ioio.lib.util.AbstractIOIOActivity.IOIOThread#loop()
 		 */
 		@Override
 		public void loop() throws ConnectionLostException {
 			led_.write(!button_.isChecked());
-			try {
-				rightMotorClock.write(true);
-				Thread.sleep(1000);
-				rightMotorClock.write(false);
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
+			log("hello");
+//			try {
+//				rightMotorClock.write(true);
+//				rightMotorClock.write(false);
+//				leftMotorClock.write(true);
+//				leftMotorClock.write(false);
+//				Thread.sleep(100);
+//			} catch (InterruptedException e) {
+//			}
 		}
 	}
 
@@ -87,4 +108,16 @@ public class MainActivity extends IOIOActivity {
 	protected IOIOLooper createIOIOLooper() {
 		return new Looper();
 	}
+	public void log(final String msg)
+    {
+        runOnUiThread(new Runnable()
+        {
+            public void run()
+            {
+                mText.append(msg);
+                mText.append("\n");
+                scroller.smoothScrollTo(0, mText.getBottom());
+            }
+        });
+    }
 }
