@@ -97,11 +97,11 @@ public class MainActivity extends IOIOActivity
 			led_.write(!button_.isChecked());
 			try
 			{
-				// rightMotorClock.write(true);
-				// rightMotorClock.write(false);
-				// leftMotorClock.write(true);
-				// leftMotorClock.write(false);
-				Thread.sleep(10);
+				 rightMotorClock.write(true);
+				 rightMotorClock.write(false);
+				 leftMotorClock.write(true);
+				 leftMotorClock.write(false);
+				Thread.sleep(100);
 				// // if (TotalCount-- < 0) {
 				// motorEn.write(false);
 				// }
